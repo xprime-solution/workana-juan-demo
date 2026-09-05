@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catálogo — Top Gear</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.catlayout { display:grid; grid-template-columns: 288px 1fr; gap: 26px; align-items:flex-start; padding-bottom: 60px; }
+@media (max-width: 980px) { .catlayout { grid-template-columns: 1fr; } .filtersidebar { display:none; } .filtersidebar.open { display:block; } }
+.filtersidebar { position: sticky; top: 92px; }
+.fgroup { padding: 16px 18px; border-bottom: 1px solid var(--border); }
+.fgroup:last-child { border-bottom: none; }
+.fgroup h5 { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+.fgroup h5 .count { color: var(--accent-strong); font-weight:800; }
+.checklist { display:flex; flex-direction:column; gap:9px; }
+.checklist label { display:flex; align-items:center; gap:9px; font-size:13px; color:var(--text-secondary); cursor:pointer; }
+.checklist input { width:15px;height:15px; accent-color: var(--accent); }
+.rangelabels { display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+.rangelabels b { color: var(--text-primary); }
+.toolbar { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
+.toolbar__search { position:relative; width: 280px; }
+.toolbar__search .icon-slot { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--text-muted); }
+.toolbar__search input { padding-left:38px; }
+.resultsgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+@media (max-width: 1180px) { .resultsgrid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width: 720px) { .resultsgrid { grid-template-columns:1fr; } }
+.vcard { background: var(--surface); border:1px solid var(--border); border-radius: var(--r-lg); overflow:hidden; box-shadow: var(--shadow-soft); }
+.vcard__img { height: 168px; background-size: cover; background-position: center; position: relative; }
+.vcard__img .pill { position:absolute; top:12px; left:12px; }
+.vcard__img .pill.price { left:auto; right:12px; background:rgba(6,10,9,.78); color:var(--accent-strong); border-color: var(--accent-border); }
+.vcard__body { padding:16px 18px 18px; }
+.vcard__body h4 { font-size:15px; font-weight:700; }
+.vcard__body .sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.vcard__specs { display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:12px; font-size:11.8px; color:var(--text-secondary); }
+.vcard__specs span { display:flex; align-items:center; gap:5px; }
+.vcard__foot { display:flex; gap:8px; margin-top:16px; }
+.pagerow { display:flex; align-items:center; justify-content:space-between; margin-top:26px; flex-wrap:wrap; gap:12px; }
+.pager { display:flex; gap:6px; }
+.pager button { width:34px;height:34px;border-radius:8px;border:1px solid var(--border); background:var(--surface-2); color:var(--text-secondary); font-size:13px; font-weight:700; cursor:pointer; }
+.pager button.active { background: var(--accent-soft); color: var(--accent-strong); border-color: var(--accent-border); }
+.pager button:disabled { opacity:.4; cursor:not-allowed; }
+.filtertoggle { display:none; }
+@media (max-width: 980px) { .filtertoggle { display:inline-flex; } }
+</style>
+</head>
+<body>
+<div class="tg-page">
+  <div id="topnav-root"></div>
+
+  <div class="shell">
+    <div class="pagehead">
+      <div class="breadcrumb"><a href="index.html">Inicio</a><span class="sep">/</span><span class="here">Catálogo</span></div>
+      <div class="pagehead__row">
+        <div>
+          <h1>Catálogo de vehículos</h1>
+          <div class="pagehead__sub">15 vehículos cargados manualmente, listos para cotizar</div>
+        </div>
+        <button class="btn btn-ghost filtertoggle" id="btnToggleFilters"><span class="icon-slot" data-lucide="funnel" data-size="16"></span>Filtros</button>
+      </div>
+    </div>
+
+    <div class="catlayout">
+      <aside class="card filtersidebar" id="filterSidebar">
+        <div class="panel-title"><h3>Filtros</h3><a href="#" id="clearFilters">Limpiar</a></div>
+
+        <div class="fgroup">
+          <h5>Marca</h5>
+          <div class="checklist" id="fMarca"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Carrocería</h5>
+          <div class="toggle-group" id="fCarroceria"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Motorización</h5>
+          <div class="toggle-group" id="fMotor"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Origen</h5>
+          <div class="toggle-group" id="fOrigen"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Estado</h5>
+          <div class="toggle-group" id="fEstado"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Disponibilidad</h5>
+          <div class="toggle-group" id="fDisp"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Transmisión</h5>
+          <div class="toggle-group" id="fTrans"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Tracción</h5>
+          <div class="toggle-group" id="fTraccion"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Puertas</h5>
+          <div class="toggle-group" id="fPuertas"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Asientos</h5>
+          <div class="toggle-group" id="fAsientos"></div>
+        </div>
+        <div class="fgroup">
+          <h5>ADAS</h5>
+          <div class="toggle-group" id="fAdas"></div>
+        </div>
+        <div class="fgroup">
+          <h5>Color</h5>
+          <div class="select-wrap"><select class="select" id="fColor"><option value="">Todos</option></select><span class="icon-slot" data-lucide="chevron-down" data-size="14"></span></div>
+        </div>
+        <div class="fgroup">
+          <h5>Año</h5>
+          <input type="range" id="fAnioMin">
+          <div class="rangelabels"><span>Desde</span><b id="fAnioMinVal"></b></div>
+        </div>
+        <div class="fgroup">
+          <h5>Precio FOB</h5>
+          <input type="range" id="fFobMax">
+          <div class="rangelabels"><span>Hasta</span><b id="fFobMaxVal"></b></div>
+        </div>
+        <div class="fgroup">
+          <h5>Potencia (hp)</h5>
+          <input type="range" id="fPotMin">
+          <div class="rangelabels"><span>Desde</span><b id="fPotMinVal"></b></div>
+        </div>
+        <div class="fgroup">
+          <h5>Torque (Nm)</h5>
+          <input type="range" id="fTorqueMin">
+          <div class="rangelabels"><span>Desde</span><b id="fTorqueMinVal"></b></div>
+        </div>
+        <div class="fgroup">
+          <h5>Batería (kWh)</h5>
+          <input type="range" id="fBatMin">
+          <div class="rangelabels"><span>Mínimo (eléctricos/PHEV)</span><b id="fBatMinVal"></b></div>
+        </div>
+        <div class="fgroup">
+          <h5>Autonomía (km)</h5>
+          <input type="range" id="fAutMin">
+          <div class="rangelabels"><span>Mínimo</span><b id="fAutMinVal"></b></div>
+        </div>
+        <div class="fgroup">
+          <h5>Kilometraje</h5>
+          <input type="range" id="fKmMax">
+          <div class="rangelabels"><span>Hasta</span><b id="fKmMaxVal"></b></div>
+        </div>
+      </aside>
+
+      <main>
+        <div class="toolbar">
+          <div class="toolbar__search">
+            <span class="icon-slot" data-lucide="search" data-size="16"></span>
+            <input class="input" id="searchInput" placeholder="Buscar por marca o modelo...">
+          </div>
+          <div class="flex items-center gap-12">
+            <span class="text-muted" style="font-size:12.5px;" id="resultsCount"></span>
+            <div class="select-wrap" style="width:200px;">
+              <select class="select" id="sortSelect">
+                <option value="relevancia">Ordenar: relevancia</option>
+                <option value="precio-asc">Precio FOB: menor a mayor</option>
+                <option value="precio-desc">Precio FOB: mayor a menor</option>
+                <option value="anio-desc">Año: más reciente</option>
+                <option value="potencia-desc">Potencia: mayor a menor</option>
+              </select>
+              <span class="icon-slot" data-lucide="arrow-down-up" data-size="14"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="resultsgrid" id="resultsGrid"></div>
+        <div id="emptyState" class="empty-state hidden">
+          <span class="icon-slot" data-lucide="search-x" data-size="24"></span>
+          <h4>No hay vehículos con esos filtros</h4>
+          <p>Probá quitando alguno de los filtros activos o ampliando el rango de precio.</p>
+          <button class="btn btn-ghost btn-sm" id="emptyClear">Limpiar filtros</button>
+        </div>
+
+        <div class="pagerow">
+          <span class="text-muted" style="font-size:12.5px;" id="pageInfo"></span>
+          <div class="pager" id="pager"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+</div>
+
+<script src="js/icons-data.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/logo.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/store.js"></script>
+<script src="js/partials.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/catalogo.js"></script>
+</body>
+</html>

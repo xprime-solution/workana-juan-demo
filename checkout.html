@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checkout — Top Gear</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.checklayout { display:grid; grid-template-columns: 1fr 340px; gap:26px; padding-bottom:60px; align-items:flex-start; }
+@media (max-width: 980px) { .checklayout { grid-template-columns:1fr; } }
+.stepper { display:flex; gap:0; margin-bottom:26px; }
+.stepper .s { flex:1; display:flex; align-items:center; gap:10px; padding-bottom:14px; border-bottom:3px solid var(--border); position:relative; }
+.stepper .s.active, .stepper .s.done { border-color: var(--accent); }
+.stepper .s .dot { width:26px;height:26px;border-radius:50%;background:var(--surface-3);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0; }
+.stepper .s.active .dot, .stepper .s.done .dot { background: var(--accent); color: var(--accent-ink); }
+.stepper .s b { font-size:12.5px; font-weight:700; color:var(--text-secondary); }
+.stepper .s.active b, .stepper .s.done b { color: var(--text-primary); }
+.steppanel { display:none; }
+.steppanel.active { display:block; animation: fadeSlideIn .3s ease; }
+.formgrid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width: 620px) { .formgrid { grid-template-columns:1fr; } }
+.summaryline { display:flex; justify-content:space-between; font-size:13px; padding:9px 0; border-bottom:1px dashed var(--border); }
+.summaryline:last-child { border-bottom:none; }
+.summaryline b { font-variant-numeric: tabular-nums; }
+.paycards { display:flex; gap:10px; margin-bottom:16px; }
+.paycards .toggle-chip { flex:1; text-align:center; }
+.payspinner { display:inline-block; width:15px;height:15px;border-radius:50%;border:2px solid rgba(0,0,0,.2);border-top-color: var(--accent-ink); animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.docwrap { background:#fff; color:#111; border-radius: var(--r-lg); overflow:hidden; box-shadow: var(--shadow-soft); }
+.docwrap .dochead { background: linear-gradient(120deg,#0b1016,#182018); color:#fff; padding:28px 34px; display:flex; justify-content:space-between; align-items:center; }
+.docwrap .dochead .tt { font-family:var(--font-display); font-size:22px; font-weight:700; letter-spacing:.03em; }
+.docwrap .docbody { padding:30px 34px; }
+.docwrap table { width:100%; border-collapse:collapse; font-size:13px; }
+.docwrap table td { padding:8px 0; border-bottom:1px solid #e7e7e7; }
+.docwrap table td:last-child { text-align:right; font-weight:700; }
+.docwrap .totalrow td { font-size:16px; font-weight:800; border-top:2px solid #111; border-bottom:none; padding-top:14px; color:#7a5410; }
+.docmeta { display:flex; justify-content:space-between; font-size:12px; color:#555; margin-bottom:18px; }
+.docveh { display:flex; gap:16px; padding:16px; background:#f6f6f4; border-radius:10px; margin-bottom:20px; }
+.docveh img { width:120px;height:84px;object-fit:cover;border-radius:8px; }
+@media print {
+  #topnav-root, #footer-root, .no-print, .stepper, .checklayout > aside, .pagehead, .toast-stack { display:none !important; }
+  .checklayout { display:block; }
+  body, .tg-page { background:#fff !important; }
+  .docwrap { box-shadow:none; }
+}
+</style>
+</head>
+<body>
+<div class="tg-page">
+  <div id="topnav-root"></div>
+
+  <div class="shell">
+    <div class="pagehead">
+      <div class="breadcrumb"><a href="index.html">Inicio</a><span class="sep">/</span><span class="here">Checkout</span></div>
+      <h1>Confirmar cotización</h1>
+      <div class="pagehead__sub">De la calculadora a la propuesta comercial, en cuatro pasos</div>
+    </div>
+
+    <div id="emptyQuote" class="card empty-state hidden">
+      <span class="icon-slot" data-lucide="calculator" data-size="24"></span>
+      <h4>Todavía no tenés una cotización activa</h4>
+      <p>Elegí un vehículo en el catálogo o en la calculadora y guardá la cotización para continuar acá.</p>
+      <a class="btn btn-primary btn-sm" href="catalogo.html">Ir al catálogo</a>
+    </div>
+
+    <div id="checkoutFlow" class="hidden">
+      <div class="stepper">
+        <div class="s active" data-step="1"><div class="dot">1</div><b>Resumen</b></div>
+        <div class="s" data-step="2"><div class="dot">2</div><b>Datos del comprador</b></div>
+        <div class="s" data-step="3"><div class="dot">3</div><b>Pago</b></div>
+        <div class="s" data-step="4"><div class="dot">4</div><b>Propuesta comercial</b></div>
+      </div>
+
+      <div class="checklayout">
+        <div>
+          <div class="steppanel active" data-panel="1">
+            <div class="card panel-body">
+              <div class="flex gap-16" style="align-items:flex-start;">
+                <img id="qImg" style="width:180px;height:130px;object-fit:cover;border-radius:12px;" src="" alt="">
+                <div style="flex:1;">
+                  <h3 style="font-size:18px;font-weight:700;" id="qTitle"></h3>
+                  <div class="text-muted" style="font-size:13px;margin-top:2px;" id="qSub"></div>
+                  <div class="mt-16" id="qSummary"></div>
+                </div>
+              </div>
+              <button class="btn btn-primary mt-16" onclick="tgGoStep(2)">Continuar con mis datos<span class="icon-slot" data-lucide="arrow-right" data-size="15"></span></button>
+            </div>
+          </div>
+
+          <div class="steppanel" data-panel="2">
+            <div class="card panel-body">
+              <div class="formgrid">
+                <div class="field"><label>Nombre completo</label><input class="input" id="bNombre" value="Camilo Andrés Rojas Peña"></div>
+                <div class="field"><label>Cédula</label><input class="input" id="bCedula" value="1 128 445 902"></div>
+                <div class="field"><label>Ciudad de entrega</label><input class="input" id="bCiudad" value="Medellín, Antioquia"></div>
+                <div class="field"><label>Teléfono</label><input class="input" id="bTelefono" value="+57 300 555 0142"></div>
+                <div class="field" style="grid-column:1/-1;"><label>Correo electrónico</label><input class="input" id="bEmail" value="camilo.rojas@example.com"></div>
+              </div>
+              <div class="flex gap-8 mt-16">
+                <button class="btn btn-ghost" onclick="tgGoStep(1)">Atrás</button>
+                <button class="btn btn-primary" onclick="tgGoStep(3)">Continuar al pago<span class="icon-slot" data-lucide="arrow-right" data-size="15"></span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="steppanel" data-panel="3">
+            <div class="card panel-body">
+              <div class="paycards">
+                <button type="button" class="toggle-chip active" data-pay="tarjeta"><span class="icon-slot" data-lucide="credit-card" data-size="14"></span> Tarjeta</button>
+                <button type="button" class="toggle-chip" data-pay="pse"><span class="icon-slot" data-lucide="landmark" data-size="14"></span> PSE</button>
+              </div>
+              <div id="payTarjeta">
+                <div class="formgrid">
+                  <div class="field" style="grid-column:1/-1;"><label>Número de tarjeta</label><input class="input tabular" value="4242 4242 4242 4242" disabled></div>
+                  <div class="field"><label>Vencimiento</label><input class="input" value="09/29" disabled></div>
+                  <div class="field"><label>CVV</label><input class="input" value="•••" disabled></div>
+                </div>
+              </div>
+              <div id="payPse" class="hidden">
+                <div class="field"><label>Banco</label><div class="select-wrap"><select class="select" disabled><option>Bancolombia</option></select><span class="icon-slot" data-lucide="chevron-down" data-size="14"></span></div></div>
+              </div>
+              <p class="inlinehint mt-8">Pasarela simulada para este demo: no se procesa ningún cobro real.</p>
+              <div class="flex gap-8 mt-16">
+                <button class="btn btn-ghost" onclick="tgGoStep(2)">Atrás</button>
+                <button class="btn btn-primary" id="btnPagar">Procesar el pago del anticipo<span class="icon-slot" data-lucide="arrow-right" data-size="15"></span></button>
+              </div>
+              <div id="payStatus" class="mt-16"></div>
+            </div>
+          </div>
+
+          <div class="steppanel" data-panel="4">
+            <div class="docwrap" id="proposalDoc"></div>
+            <div class="flex gap-8 mt-16 no-print">
+              <button class="btn btn-ghost" onclick="window.print()"><span class="icon-slot" data-lucide="printer" data-size="16"></span>Imprimir / guardar como PDF</button>
+              <button class="btn btn-primary" id="btnConfirmarPedido"><span class="icon-slot" data-lucide="circle-check" data-size="16"></span>Confirmar pedido</button>
+            </div>
+          </div>
+        </div>
+
+        <aside>
+          <div class="card sidebar-card" style="position:sticky;top:92px;padding:20px;">
+            <div class="text-muted" style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Total estimado</div>
+            <div style="font-family:var(--font-display);font-size:26px;font-weight:700;" id="asideTotal" class="tabular"></div>
+            <div class="text-muted" style="font-size:12px;" id="asideTotalUsd"></div>
+            <div class="grad-divider mt-16 mb-16"></div>
+            <div class="summaryline"><span>Origen</span><b id="asideOrigen"></b></div>
+            <div class="summaryline"><span>Motorización</span><b id="asideMotor"></b></div>
+            <div class="summaryline"><span>Arancel</span><b id="asideArancel"></b></div>
+            <div class="summaryline"><span>IVA</span><b id="asideIva"></b></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+</div>
+
+<script src="js/icons-data.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/logo.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/store.js"></script>
+<script src="js/partials.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/checkout.js"></script>
+</body>
+</html>

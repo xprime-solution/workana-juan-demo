@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motor de liquidación — Top Gear</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.calclayout { display:grid; grid-template-columns: 340px 1fr 330px; gap: 24px; align-items:flex-start; padding-bottom: 60px; }
+@media (max-width: 1240px) { .calclayout { grid-template-columns: 320px 1fr; } .resultpanel { grid-column: 1 / -1; } }
+@media (max-width: 780px) { .calclayout { grid-template-columns: 1fr; } }
+.sticky-col { position: sticky; top: 92px; }
+.modechip { display:flex; gap:8px; margin-bottom:18px; }
+.modechip button { flex:1; }
+.inlinehint { font-size:11.5px; color:var(--text-muted); margin-top:5px; }
+.inlinehint b { color: var(--accent-strong); }
+.trmrow { display:flex; gap:8px; }
+.trmrow .toggle-chip { flex:0 0 auto; }
+.breakdowncard .step {
+  display:flex; align-items:flex-start; gap:14px; padding:16px 20px; border-bottom:1px solid var(--border);
+}
+.breakdowncard .step:last-child { border-bottom:none; }
+.breakdowncard .step .n {
+  width:26px;height:26px;border-radius:50%;background:var(--surface-3);color:var(--text-secondary);
+  display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;flex-shrink:0;margin-top:2px;
+}
+.breakdowncard .step.total .n { background: var(--accent); color: var(--accent-ink); }
+.breakdowncard .step__body { flex:1; }
+.breakdowncard .step__head { display:flex; justify-content:space-between; gap:10px; font-size:13.5px; font-weight:700; }
+.breakdowncard .step__head b { font-variant-numeric: tabular-nums; }
+.breakdowncard .step__note { font-size:12px; color:var(--text-muted); margin-top:4px; }
+.breakdowncard .step.total .step__head b { color:var(--accent-strong); font-size:17px; }
+.resultpanel .card { padding:22px; }
+.resultpanel .biggo { font-family:var(--font-display); font-size:34px; font-weight:700; margin-top:6px; }
+.resultpanel .usdline { color:var(--text-muted); font-size:13px; margin-top:2px; }
+.ratepills { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+</style>
+</head>
+<body>
+<div class="tg-page">
+  <div id="topnav-root"></div>
+
+  <div class="shell">
+    <div class="pagehead">
+      <div class="breadcrumb"><a href="index.html">Inicio</a><span class="sep">/</span><span class="here">Motor de liquidación</span></div>
+      <div class="pagehead__row">
+        <div>
+          <h1>Motor de liquidación</h1>
+          <div class="pagehead__sub">La plantilla de Excel de Juan, convertida en fórmulas reales</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calclayout">
+      <div class="sticky-col">
+        <div class="card">
+          <div class="panel-title"><h3>Configuración</h3></div>
+          <div class="panel-body">
+            <div class="modechip">
+              <button class="btn btn-ghost btn-sm active" data-mode="catalogo" id="modeCatalogo">Del catálogo</button>
+              <button class="btn btn-outline btn-sm" data-mode="libre" id="modeLibre">Cotización libre</button>
+            </div>
+
+            <div class="field" id="vehiculoField">
+              <label>Vehículo</label>
+              <div class="select-wrap"><select class="select" id="cVehiculo"></select><span class="icon-slot" data-lucide="chevron-down" data-size="15"></span></div>
+            </div>
+
+            <div class="field mt-16">
+              <label>Origen del vehículo</label>
+              <div class="select-wrap"><select class="select" id="cOrigen"></select><span class="icon-slot" data-lucide="chevron-down" data-size="15"></span></div>
+              <div class="inlinehint" id="hintOrigen"></div>
+            </div>
+
+            <div class="field mt-16">
+              <label>Motorización</label>
+              <div class="select-wrap"><select class="select" id="cMotor"></select><span class="icon-slot" data-lucide="chevron-down" data-size="15"></span></div>
+              <div class="inlinehint" id="hintMotor"></div>
+            </div>
+
+            <div class="field mt-16">
+              <label>Valor FOB del vehículo</label>
+              <div class="input-prefix-wrap"><span class="input-prefix">USD</span><input class="input tabular" id="cFob" type="number" step="100" style="padding-left:48px;"></div>
+            </div>
+
+            <div class="field mt-16">
+              <label>Flete del contenedor completo <span class="hint">(se prorratea)</span></label>
+              <div class="input-prefix-wrap"><span class="input-prefix">USD</span><input class="input tabular" id="cFlete" type="number" step="50" style="padding-left:48px;"></div>
+            </div>
+
+            <div class="field mt-16">
+              <label>Vehículos que comparten el contenedor</label>
+              <input class="input tabular" id="cCompartidos" type="number" min="1" max="6">
+            </div>
+
+            <div class="field mt-16" id="categoriaField">
+              <label>Categoría de gastos operativos</label>
+              <div class="toggle-group" id="cCategoria">
+                <button type="button" class="toggle-chip" data-v="liviano">Liviano (sedán/SUV)</button>
+                <button type="button" class="toggle-chip" data-v="pesado">Pesado (pickup/SUV grande)</button>
+              </div>
+            </div>
+
+            <div class="field mt-16">
+              <label>TRM (COP por USD)</label>
+              <div class="trmrow">
+                <button type="button" class="toggle-chip active" id="trmAuto">Automática</button>
+                <button type="button" class="toggle-chip" id="trmManual">Manual</button>
+              </div>
+              <input class="input tabular mt-8" id="cTrm" type="number" step="0.5">
+              <div class="inlinehint">Valor automático de hoy: <b id="hintTrmHoy"></b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card breakdowncard" id="breakdownCard"></div>
+      </div>
+
+      <div class="resultpanel sticky-col">
+        <div class="card">
+          <div class="text-muted" style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Valor total nacionalizado</div>
+          <div class="biggo tabular" id="rTotalCop"></div>
+          <div class="usdline tabular" id="rTotalUsd"></div>
+          <div class="ratepills">
+            <span class="pill pill-accent" id="rTratado"></span>
+          </div>
+          <div class="ratepills" style="margin-top:-8px;">
+            <span class="pill pill-neutral" id="rArancelPill"></span>
+            <span class="pill pill-neutral" id="rIvaPill"></span>
+            <span class="pill pill-neutral" id="rImpoPill"></span>
+          </div>
+          <button class="btn btn-primary btn-block mt-16" id="btnGuardar"><span class="icon-slot" data-lucide="file-check" data-size="16"></span>Guardar cotización y continuar</button>
+          <p class="inlinehint mt-8" style="text-align:center;">Se guarda en tu sesión y queda lista para el checkout.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+</div>
+
+<script src="js/icons-data.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/logo.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/store.js"></script>
+<script src="js/partials.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/calculadora.js"></script>
+</body>
+</html>

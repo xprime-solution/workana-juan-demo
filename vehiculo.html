@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ficha del vehículo — Top Gear</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.detlayout { display:grid; grid-template-columns: 1.55fr 1fr; gap: 28px; padding-bottom: 60px; align-items:flex-start; }
+@media (max-width: 980px) { .detlayout { grid-template-columns: 1fr; } }
+.gallery__main { height: 420px; border-radius: var(--r-lg); overflow:hidden; background-size:cover; border:1px solid var(--border); box-shadow: var(--shadow-soft); transition: background-position .35s ease; }
+.gallery__thumbs { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:10px; }
+.gallery__thumbs button { width:100%; min-width:0; height:64px; border-radius:10px; border:2px solid transparent; background-size:220% auto; cursor:pointer; overflow:hidden; opacity:.6; transition: all .18s ease; padding:0; }
+.gallery__thumbs button.active, .gallery__thumbs button:hover { opacity:1; border-color: var(--accent-border); }
+.dtitle { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-top:22px; flex-wrap:wrap; }
+.dtitle h1 { font-family: var(--font-display); font-size:30px; font-weight:700; }
+.dtitle .sub { color:var(--text-secondary); font-size:14px; margin-top:4px; }
+.specrow { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:20px; }
+@media (max-width: 700px) { .specrow { grid-template-columns:repeat(2,1fr); } }
+.specrow .mini { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:13px 14px; }
+.specrow .mini .icon-slot { color:var(--accent-strong); margin-bottom:6px; }
+.specrow .mini b { display:block; font-size:15px; font-weight:700; }
+.specrow .mini span { font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); }
+.spectable td { font-size:13.5px; }
+.spectable td:first-child { color:var(--text-muted); width:46%; }
+.spectable td:last-child { font-weight:700; text-align:right; }
+.doclist { display:flex; flex-direction:column; gap:10px; }
+.docrow { display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-md); }
+.docrow .icon-slot { width:36px;height:36px;border-radius:9px;background:var(--accent-soft);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.docrow b { font-size:13.5px; display:block; }
+.docrow p { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.docrow .pill { margin-left:auto; flex-shrink:0; }
+.sidebar-card { position: sticky; top: 92px; }
+.priceblock { padding: 22px; }
+.priceblock .fob { font-family: var(--font-display); font-size:34px; font-weight:700; }
+.priceblock .fob small { font-family: var(--font-ui); font-size:13px; color:var(--text-muted); font-weight:600; }
+.estbox { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-md); padding:16px 18px; margin-top:18px; }
+.estbox .val { font-family: var(--font-display); font-size:24px; font-weight:700; }
+.costrow { display:flex; justify-content:space-between; font-size:12.8px; padding:7px 0; border-bottom:1px dashed var(--border); }
+.costrow:last-child { border-bottom:none; }
+.costrow b { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div class="tg-page">
+  <div id="topnav-root"></div>
+
+  <div class="shell">
+    <div class="pagehead" style="padding-bottom:0;">
+      <div class="breadcrumb"><a href="index.html">Inicio</a><span class="sep">/</span><a href="catalogo.html">Catálogo</a><span class="sep">/</span><span class="here" id="crumbName">Vehículo</span></div>
+    </div>
+
+    <div class="detlayout">
+      <div>
+        <div class="gallery__main" id="galleryMain"></div>
+        <div class="gallery__thumbs" id="galleryThumbs"></div>
+
+        <div class="dtitle">
+          <div>
+            <h1 id="titleName"></h1>
+            <div class="sub" id="titleSub"></div>
+          </div>
+          <div class="flex gap-8" id="titleBadges"></div>
+        </div>
+
+        <div class="specrow" id="specRow"></div>
+
+        <div class="card mt-32">
+          <div class="tabbar" style="padding:0 20px;">
+            <button class="active" data-tab="resumen">Resumen</button>
+            <button data-tab="ficha">Ficha técnica</button>
+            <button data-tab="costos">Costos</button>
+            <button data-tab="documentos">Documentos</button>
+          </div>
+          <div class="panel-body">
+            <div class="tabpanel active" id="tab-resumen">
+              <p id="resumenTexto" style="font-size:14px;color:var(--text-secondary);line-height:1.7;"></p>
+              <div class="mt-16" id="resumenChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+            </div>
+            <div class="tabpanel" id="tab-ficha">
+              <div class="table-wrap">
+                <table class="tg-table spectable"><tbody id="fichaBody"></tbody></table>
+              </div>
+            </div>
+            <div class="tabpanel" id="tab-costos">
+              <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">El mismo motor de liquidación de la calculadora, ya cargado con los datos de esta unidad. Ajustá la TRM o cuántos vehículos comparten el contenedor para ver el total cambiar en vivo.</p>
+              <div class="specrow" style="grid-template-columns:1fr 1fr 1fr;">
+                <div class="field">
+                  <label>TRM (COP por USD)</label>
+                  <input class="input tabular" id="dTrm" type="number" step="0.5">
+                </div>
+                <div class="field">
+                  <label>Vehículos en el contenedor</label>
+                  <input class="input" id="dCompartidos" type="number" min="1">
+                </div>
+                <div class="field">
+                  <label>Flete del contenedor</label>
+                  <div class="input-prefix-wrap"><span class="input-prefix">USD</span><input class="input tabular" id="dFlete" type="number" style="padding-left:48px;"></div>
+                </div>
+              </div>
+              <div class="grad-divider mt-16 mb-16"></div>
+              <div id="dBreakdown"></div>
+            </div>
+            <div class="tabpanel" id="tab-documentos">
+              <div class="doclist" id="docList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="card sidebar-card">
+          <div class="priceblock">
+            <div class="text-muted" style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Valor FOB</div>
+            <div class="fob tabular" id="sideFob"></div>
+            <div class="grad-divider mt-16 mb-16"></div>
+            <div class="estbox">
+              <div class="text-muted" style="font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">Valor nacionalizado estimado</div>
+              <div class="val tabular" id="sideTotal"></div>
+              <div class="costrow"><span>Tratado aplicado</span><b id="sideTratado"></b></div>
+              <div class="costrow"><span>Arancel</span><b id="sideArancel"></b></div>
+              <div class="costrow"><span>IVA</span><b id="sideIva"></b></div>
+              <div class="costrow"><span>Impoconsumo</span><b id="sideImpo"></b></div>
+            </div>
+            <a class="btn btn-primary btn-block mt-16" id="btnCotizar"><span class="icon-slot" data-lucide="calculator" data-size="16"></span>Cotizar este vehículo</a>
+            <button class="btn btn-ghost btn-block mt-8" id="btnVerDocs"><span class="icon-slot" data-lucide="file-text" data-size="16"></span>Ver documentos requeridos</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+</div>
+
+<script src="js/icons-data.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/logo.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/store.js"></script>
+<script src="js/partials.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/vehiculo.js"></script>
+</body>
+</html>

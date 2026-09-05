@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal del cliente — Top Gear</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.lookuprow { display:flex; gap:10px; margin-bottom:26px; flex-wrap:wrap; }
+.lookuprow input { width:220px; }
+.tracker { display:flex; overflow-x:auto; padding: 8px 4px 14px; gap:0; }
+.tstep { flex:1; min-width:118px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative; padding:0 6px; }
+.tstep::before {
+  content:""; position:absolute; top:19px; left:-50%; width:100%; height:2px; background:var(--border); z-index:0;
+}
+.tstep:first-child::before { display:none; }
+.tstep.done::before, .tstep.current::before { background: var(--accent); }
+.tstep .circle {
+  width:40px;height:40px;border-radius:50%; background:var(--surface-2); border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center; z-index:1; color:var(--text-muted); margin-bottom:10px;
+}
+.tstep.done .circle { background: var(--ok); border-color: var(--ok); color:#062012; }
+.tstep.current .circle { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 5px var(--accent-soft); }
+.tstep b { font-size:11.5px; font-weight:700; color:var(--text-secondary); line-height:1.3; }
+.tstep.done b, .tstep.current b { color: var(--text-primary); }
+.portlayout { display:grid; grid-template-columns: 1fr 320px; gap:24px; align-items:flex-start; margin-top:26px; }
+@media (max-width: 980px) { .portlayout { grid-template-columns:1fr; } }
+.vehsummary { display:flex; gap:16px; padding:20px; align-items:center; }
+.vehsummary img { width:130px;height:96px;border-radius:12px;object-fit:cover; }
+.doclist2 { display:flex; flex-direction:column; gap:10px; }
+.docrow2 { display:flex; align-items:center; gap:12px; padding:13px 16px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-md); }
+.docrow2 span.nm { flex:1; font-size:13px; }
+.advisorcard { display:flex; gap:12px; align-items:center; padding:18px; }
+.advisorcard img { width:52px;height:52px;border-radius:50%;object-fit:cover; }
+.portcard { position:relative; border-radius:var(--r-lg); overflow:hidden; height:150px; background-size:cover; background-position:center; }
+.portcard .scrim { position:absolute; inset:0; background:linear-gradient(0deg,rgba(3,7,6,.88),transparent 60%); }
+.portcard .label { position:absolute; left:14px; bottom:12px; font-size:12.5px; font-weight:700; }
+.portcard .label small { display:block; font-weight:600; color:var(--text-muted); font-size:11px; }
+.orderswitch { display:flex; flex-direction:column; gap:8px; }
+.orderswitch a { padding:10px 12px; border-radius:9px; border:1px solid var(--border); font-size:12.5px; display:flex; justify-content:space-between; }
+.orderswitch a.active { border-color:var(--accent-border); background:var(--accent-soft); color:var(--accent-strong); }
+</style>
+</head>
+<body>
+<div class="tg-page">
+  <div id="topnav-root"></div>
+
+  <div class="shell">
+    <div class="pagehead">
+      <div class="breadcrumb"><a href="index.html">Inicio</a><span class="sep">/</span><span class="here">Portal del cliente</span></div>
+      <h1>Portal del cliente</h1>
+      <div class="pagehead__sub">Seguimiento del pedido, de la compra confirmada a la matrícula</div>
+    </div>
+
+    <div class="lookuprow">
+      <input class="input" id="lookupNumero" placeholder="Número de pedido, ej. TG-2026-00842">
+      <button class="btn btn-primary" id="btnBuscar"><span class="icon-slot" data-lucide="search" data-size="15"></span>Buscar pedido</button>
+    </div>
+
+    <div id="notFoundLayout" class="portlayout hidden">
+      <div id="notFound" class="card empty-state">
+        <span class="icon-slot" data-lucide="triangle-alert" data-size="24"></span>
+        <h4>No encontramos ese número de pedido</h4>
+        <p>Revisá el número o elegí uno de tus pedidos recientes en el panel derecho.</p>
+      </div>
+      <aside>
+        <div class="card panel-body" id="ordersPanelAlt">
+          <div class="panel-title" style="padding:0 0 12px;border:none;"><h3>Tus pedidos</h3></div>
+          <div class="orderswitch" id="ordersListAlt"></div>
+        </div>
+      </aside>
+    </div>
+
+    <div id="orderView" class="hidden">
+      <div class="card">
+        <div class="vehsummary">
+          <img id="oVehImg" src="" alt="">
+          <div style="flex:1;">
+            <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:8px;">
+              <div>
+                <b style="font-size:16px;" id="oVehTitle"></b>
+                <div class="text-muted" style="font-size:12.5px;margin-top:2px;" id="oVehSub"></div>
+              </div>
+              <span class="pill pill-accent" id="oNumero"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <div class="panel-title"><h3>Estado de la importación</h3></div>
+        <div class="panel-body">
+          <div class="tracker" id="tracker"></div>
+        </div>
+      </div>
+
+      <div class="stat-row mt-16">
+        <div class="stat-tile"><div class="stat-tile__top"><div class="stat-tile__icon"><span class="icon-slot" data-lucide="wallet" data-size="18"></span></div></div><div class="stat-tile__label">Valor total</div><div class="stat-tile__value tabular" id="oTotal"></div><div class="stat-tile__ctx" id="oTotalUsd"></div></div>
+        <div class="stat-tile"><div class="stat-tile__top"><div class="stat-tile__icon ok"><span class="icon-slot" data-lucide="circle-check" data-size="18"></span></div></div><div class="stat-tile__label">Abonado</div><div class="stat-tile__value tabular" id="oAbonado"></div><div class="stat-tile__ctx ok" id="oAbonadoPct"></div></div>
+        <div class="stat-tile"><div class="stat-tile__top"><div class="stat-tile__icon warn"><span class="icon-slot" data-lucide="clock" data-size="18"></span></div></div><div class="stat-tile__label">Pendiente por pagar</div><div class="stat-tile__value tabular" id="oPendiente"></div><div class="stat-tile__ctx warn">Antes de la entrega</div></div>
+        <div class="stat-tile"><div class="stat-tile__top"><div class="stat-tile__icon info"><span class="icon-slot" data-lucide="calendar" data-size="18"></span></div></div><div class="stat-tile__label">Entrega estimada</div><div class="stat-tile__value tabular" id="oFecha" style="font-size:22px;"></div><div class="stat-tile__ctx" id="oFechaDesde"></div></div>
+      </div>
+
+      <div class="portlayout">
+        <div class="card">
+          <div class="panel-title"><h3>Documentos del trámite</h3></div>
+          <div class="panel-body">
+            <div class="doclist2" id="oDocs"></div>
+          </div>
+        </div>
+        <aside style="display:flex;flex-direction:column;gap:16px;">
+          <div class="card">
+            <div class="panel-title"><h3>Tu asesor</h3></div>
+            <div class="advisorcard">
+              <img id="oAsesorImg" src="" alt="">
+              <div><b style="font-size:13.5px;display:block;" id="oAsesorNombre"></b><span class="text-muted" style="font-size:12px;" id="oAsesorRol"></span></div>
+            </div>
+          </div>
+          <div class="card" style="padding:14px;">
+            <div class="portcard" style="background-image:url('assets/images/misc/buenaventura.jpg');">
+              <div class="scrim"></div>
+              <div class="label">Puerto de Buenaventura<small>Etapa física del contenedor</small></div>
+            </div>
+          </div>
+          <div class="card panel-body" id="ordersPanel">
+            <div class="panel-title" style="padding:0 0 12px;border:none;"><h3>Tus pedidos</h3></div>
+            <div class="orderswitch" id="ordersList"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-root"></div>
+</div>
+
+<script src="js/icons-data.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/logo.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/store.js"></script>
+<script src="js/partials.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/portal.js"></script>
+</body>
+</html>
